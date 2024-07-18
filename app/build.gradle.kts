@@ -1,6 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -50,7 +55,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,6 +63,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -66,5 +74,35 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    //dagger hilt
+    //dagger
+    implementation (libs.hilt.android)
+    kapt (libs.hilt.compiler)
+    kapt (libs.androidx.hilt.compiler)
+    implementation (libs.androidx.hilt.navigation.compose)
+
+    //firebase dependencies
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+
+    implementation (libs.play.services.auth)
+
+    //firebase storage
+    implementation (libs.firebase.storage)
+
+    //room
+    implementation(libs.androidx.room.runtime)
+
+    //exo player
+    implementation (libs.exoplayer)
+
+
+    //websocket
+
+    //coil
+    implementation( "io.coil-kt:coil-compose:2.2.2")
+
+
 }
+
+

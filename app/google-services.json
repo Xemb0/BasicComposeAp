@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "837656074181",
+    "project_id": "watchparty-xembo",
+    "storage_bucket": "watchparty-xembo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837656074181:android:6dade44a0133bb9be51dac",
+        "android_client_info": {
+          "package_name": "com.autobot.basicapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACpXWHLjR3qrD03JMM0uqarw-UkxIE5TY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
