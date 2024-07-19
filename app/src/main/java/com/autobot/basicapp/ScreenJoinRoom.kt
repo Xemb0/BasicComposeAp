@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.autobot.basicapp.exoplayer.MainViewModel
 import com.autobot.basicapp.signin.UserData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.withContext
+
 @Composable
 fun ScreenJoinRoom(userData: UserData, onJoinPartyClick: (String) -> Unit, onCancelClick: () -> Unit) {
     var roomId by remember { mutableStateOf("") }
@@ -69,7 +73,7 @@ fun ScreenJoinRoom(userData: UserData, onJoinPartyClick: (String) -> Unit, onCan
                 }
                 TextButton(
                     onClick = {
-                        viewModel.joinRoom(roomId, userData) { exists ->
+                        viewModel.joinRoom(roomId) { exists ->
                             if (exists) {
                                 onJoinPartyClick(roomId)
                             } else {

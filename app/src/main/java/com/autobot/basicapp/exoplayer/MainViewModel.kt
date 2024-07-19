@@ -60,11 +60,8 @@ class MainViewModel @Inject constructor(
 
     fun createRoom(roomId: String) {
         val currentUser = auth.currentUser ?: return
-        val user = mapOf(
-            "uid" to currentUser.uid,
-            "name" to (currentUser.displayName ?: "Unknown"),
-            "image" to currentUser.photoUrl.toString(),
-            "email" to (currentUser.email ?: "Unknown")
+        val user = UserData(
+            currentUser.uid,currentUser.displayName,currentUser.photoUrl.toString()
         )
 
         viewModelScope.launch {
@@ -76,27 +73,35 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun joinRoom(roomId: String, userData: UserData, callback: (Boolean) -> Unit) {
-        val currentUser = auth.currentUser ?: return
+    fun joinRoom(roomId: String, callback: (Boolean) -> Unit) {
+        val currentUser = auth.currentUser ?: run {
+            Log.e("MainViewModel", "No current user found")
+            callback(false)
+            return
+        }
 
-        // Create the user data map
-        val userMap = mapOf(
-            "uid" to userData.userId,
-            "name" to userData.username,
-            "image" to userData.profilePictureUrl
+        val user = UserData(
+            currentUser.uid,
+            currentUser.displayName ?: "",
+            currentUser.photoUrl?.toString() ?: ""
         )
 
-        // Use repository to handle Firestore operations
-        repository.joinRoom(roomId, userMap) { success ->
-            if (success) {
-                callback(true)
-                listenForRoomUsers(roomId)
-            } else {
-                callback(false)
+        viewModelScope.launch {
+            repository.createRoom(roomId, user) { success ->
+                if (success) {
+                    Log.d("MainViewModel", "Successfully joined room: $roomId")
+                    listenForRoomUsers(roomId)
+                } else {
+                    Log.d("MainViewModel", "Failed to join room: $roomId")
+                }
+                callback(success)
             }
         }
     }
 
+    fun exitRoom(roomId: String,userId:String){
+        repository.exitRoom(roomId,userId)
+    }
     fun listenForRoomUsers(roomId: String) {
         repository.listenForRoomUsers(roomId) { userList ->
             _users.value = userList

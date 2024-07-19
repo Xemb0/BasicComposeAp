@@ -1,9 +1,6 @@
 package com.autobot.basicapp
 
-import ProfileImage
-import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,9 +9,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
@@ -30,32 +27,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.media3.ui.PlayerView
 import com.autobot.basicapp.customcomposables.UserView
 import com.autobot.basicapp.exoplayer.MainViewModel
-import com.autobot.basicapp.popups.PopupLink
 import com.autobot.basicapp.signin.UserData
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
 
 @Composable
-fun ScreenRoom(roomId: String, userData: UserData) {
+fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit) {
     var isPopupVisible by remember { mutableStateOf(false) }
-
     val viewModel = hiltViewModel<MainViewModel>()
     val users by viewModel.users.collectAsState()
     val videoItems by viewModel.videoItems.collectAsState()
+    var showConfirmExitDialog by remember { mutableStateOf(false) }
+
     val selectVideoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
@@ -74,6 +64,11 @@ fun ScreenRoom(roomId: String, userData: UserData) {
         }
     }
 
+    // Ensure the user list is updated
+    LaunchedEffect(roomId) {
+        viewModel.listenForRoomUsers(roomId)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,23 +82,14 @@ fun ScreenRoom(roomId: String, userData: UserData) {
                 .background(MyAppThemeColors.current.tertiary)
                 .padding(8.dp)
         ) {
-            // Align the UserView to the start of the Box
             Row(
                 modifier = Modifier
-                    .align(Alignment.CenterStart) // Align UserView to start
+                    .align(Alignment.CenterStart)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                UserView(
-                    userData = userData,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.toggleStreaming() }
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                LazyColumn(
+                LazyRow(
                     modifier = Modifier.weight(1f)
                 ) {
                     items(users) { item ->
@@ -116,7 +102,6 @@ fun ScreenRoom(roomId: String, userData: UserData) {
                 }
             }
 
-            // Position the Add User icon at the top right
             IconButton(
                 onClick = { isPopupVisible = true },
                 modifier = Modifier
@@ -195,7 +180,7 @@ fun ScreenRoom(roomId: String, userData: UserData) {
                     TextButton(
                         onClick = {
                             isPopupVisible = false
-                            viewModel.joinRoom(roomId, userData) { exists ->
+                            viewModel.joinRoom(roomId) { exists ->
                                 if (exists) {
                                     viewModel.listenForRoomUsers(roomId)
                                 }
@@ -217,4 +202,39 @@ fun ScreenRoom(roomId: String, userData: UserData) {
             )
         }
     }
+
+
+    // Handle back press
+    BackHandler {
+        showConfirmExitDialog = true
+    }
+
+    if (showConfirmExitDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                },
+            title = { Text("Confirm Exit") },
+            text = { Text("Are you sure you want to exit the Watch Party?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showConfirmExitDialog = false
+                    viewModel.exitRoom(roomId, userData.userId)
+                    onExit()
+                    // Handle exit logic here
+                    // For example, navigate back or close the screen
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showConfirmExitDialog = false
+
+                }) {
+                    Text("No")
+                }
+            }
+        )
+    }
+
 }

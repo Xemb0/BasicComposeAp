@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
+    id("kotlin-parcelize")
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -115,7 +116,9 @@ dependencies {
     //serializable
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.kotlinx.coroutines.core)// or the latest version
+    implementation(libs.kotlinx.coroutines.core)
+
+
 
 }
 

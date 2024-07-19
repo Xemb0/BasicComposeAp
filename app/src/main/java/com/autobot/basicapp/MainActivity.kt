@@ -126,6 +126,9 @@ class MainActivity : ComponentActivity() {
                             ScreenRoom(
                                 roomId = args.roomId,
                                 userData = userData,
+                                onExit = {
+                                    navController.popBackStack()
+                                }
                             )
                         }
                         composable<NavScreenJoinRoom> {
@@ -137,13 +140,6 @@ class MainActivity : ComponentActivity() {
                             )
                             ScreenJoinRoom(userData = userData,
                                 onJoinPartyClick = { roomId ->
-                                    lifecycleScope.launch {
-                                        mainViewModel.joinRoom(roomId, userData) { exists ->
-                                            if (exists) {
-                                                mainViewModel.listenForRoomUsers(roomId)
-                                            }
-                                        }
-                                    }
                                     navController.navigate(
                                         NavScreenRoom(
                                             roomId = roomId,
