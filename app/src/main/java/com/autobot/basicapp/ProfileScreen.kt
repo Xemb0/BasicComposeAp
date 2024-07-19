@@ -14,13 +14,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.plcoding.composegooglesignincleanarchitecture.presentation.sign_in.UserData
+import com.autobot.basicapp.signin.UserData
+import com.launcher.arclauncher.compose.theme.MyAppThemeSizes
 
 @Composable
-fun ProfileScreen(
+fun ScreenCreateRoom(
     userData: UserData?,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onCreateRoom: (String) -> Unit,
+    onJoinRoom: () -> Unit
 ) {
+    Row (
+        modifier = Modifier.fillMaxSize().padding(MyAppThemeSizes.current.large),
+        horizontalArrangement = Arrangement.End,
+    ){
+        Button(onClick = onSignOut) {
+            Text(text = "Sign out")
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -46,8 +57,18 @@ fun ProfileScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
-        Button(onClick = onSignOut) {
-            Text(text = "Sign out")
+
+        Button(onClick = onJoinRoom) {
+            Text(text = "Join Party")
         }
+
+        Button(onClick = {
+            onCreateRoom(System.currentTimeMillis().toString())
+        }) {
+            Text(text = "Host New Party")
+        }
+
+
+
     }
 }

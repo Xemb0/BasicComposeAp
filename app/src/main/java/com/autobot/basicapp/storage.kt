@@ -7,12 +7,18 @@ import java.io.File
 val storage = FirebaseStorage.getInstance()
 val storageRef = storage.reference
 
-fun uploadMovie(uri: Uri, onComplete: (Boolean) -> Unit) {
-    val movieRef = storageRef.child("movies/${uri.lastPathSegment}")
-    movieRef.putFile(uri)
-        .addOnSuccessListener { onComplete(true) }
-        .addOnFailureListener { onComplete(false) }
-}
+//fun uploadMovie(uri: Uri, onComplete: (Uri) -> Unit) {
+//    val storage = FirebaseStorage.getInstance()
+//    val storageRef = storage.reference
+//    val movieRef = storageRef.child("movies/${uri.lastPathSegment}")
+//
+//    movieRef.putFile(uri)
+//        .addOnSuccessListener {
+//            onComplete(uri)
+//        }
+//        .addOnFailureListener {
+//        }
+//}
 
 fun downloadMovie(fileName: String, onComplete: (Boolean, Uri?) -> Unit) {
     val movieRef = storageRef.child("movies/$fileName")

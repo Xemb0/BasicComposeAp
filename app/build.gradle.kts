@@ -6,16 +6,17 @@ plugins {
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.autobot.basicapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.autobot.basicapp"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -100,8 +101,21 @@ dependencies {
     //websocket
 
     //coil
-    implementation( "io.coil-kt:coil-compose:2.2.2")
+    implementation( libs.coil.compose)
+    implementation (libs.firebase.appcheck.playintegrity)
 
+
+    //media 3 and exo
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.smoothstreaming)
+    implementation(libs.androidx.media3.ui)
+
+    //compose navigation
+    implementation(libs.androidx.navigation.compose)
+    //serializable
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.kotlinx.coroutines.core)// or the latest version
 
 }
 

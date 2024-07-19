@@ -10,8 +10,6 @@ import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.plcoding.composegooglesignincleanarchitecture.presentation.sign_in.SignInResult
-import com.plcoding.composegooglesignincleanarchitecture.presentation.sign_in.UserData
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 
@@ -45,7 +43,7 @@ class GoogleAuthUiClient(
                     UserData(
                         userId = uid,
                         username = displayName,
-                        profilePictureUrl = photoUrl?.toString()
+                        profilePictureUrl = photoUrl?.toString(),
                     )
                 },
                 errorMessage = null
@@ -74,7 +72,7 @@ class GoogleAuthUiClient(
         UserData(
             userId = uid,
             username = displayName,
-            profilePictureUrl = photoUrl?.toString()
+            profilePictureUrl = photoUrl?.toString(),
         )
     }
 
