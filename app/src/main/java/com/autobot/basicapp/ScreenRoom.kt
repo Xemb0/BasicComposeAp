@@ -29,43 +29,27 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
 import com.autobot.basicapp.customcomposables.UserView
+import com.autobot.basicapp.database.Playback
 import com.autobot.basicapp.viewmodels.MainViewModel
 import com.autobot.basicapp.signin.UserData
 import com.autobot.basicapp.viewmodels.PlayerViewModel
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
-
 @Composable
-fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->Unit) {
+fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload: () -> Unit) {
     var isPopupVisible by remember { mutableStateOf(false) }
     val viewModel = hiltViewModel<MainViewModel>()
     val playerViewModel: PlayerViewModel = viewModel()
     val users by viewModel.users.collectAsState()
-//    val currentVideo by playerViewModel.currentVideo.collectAsState()
+    val currentPlayback by viewModel.currentPlayback.collectAsState()
     var showConfirmExitDialog by remember { mutableStateOf(false) }
-
-    val selectVideoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            uri?.let(viewModel::addVideoUri)
-        }
-    )
-    var lifecycle by remember { mutableStateOf(Lifecycle.Event.ON_CREATE) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            lifecycle = event
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
 
-    // Ensure the user list is updated
     LaunchedEffect(roomId) {
         viewModel.listenForRoomUsers(roomId)
+        viewModel.listenForPlayback(roomId)
     }
 
     Column(
@@ -88,9 +72,7 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                LazyRow(
-                    modifier = Modifier.weight(1f)
-                ) {
+                LazyRow(modifier = Modifier.weight(1f)) {
                     items(users) { item ->
                         UserView(
                             userData = item,
@@ -109,62 +91,62 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
                     .background(MyAppThemeColors.current.primary)
                     .clip(RoundedCornerShape(24.dp))
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add User"
-                )
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
             }
         }
 
         AndroidView(
             factory = { context ->
-                PlayerView(context).also {
-                    it.player = viewModel.player
+                PlayerView(context).apply {
+                    player = viewModel.player.apply {
+                        addListener(object : Player.Listener {
+                            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                                viewModel.updatePlayback(
+                                    roomId,
+                                    Playback(
+                                        timestamp = currentPosition,
+                                        isVideoPaused = !isPlaying
+                                    ))
+                                }
+
+
+                            override fun onPlaybackStateChanged(playbackState: Int) {
+                                if (playbackState == Player.STATE_READY) {
+
+                                }
+                            }
+                        })
+                    }
                 }
             },
-            update = {
-                when (lifecycle) {
-                    Lifecycle.Event.ON_PAUSE -> {
-                        it.onPause()
-                        it.player?.pause()
-                    }
-                    Lifecycle.Event.ON_RESUME -> {
-                        it.onResume()
-                    }
-                    else -> Unit
+            update = { playerView ->
+                playerView.player?.apply {
+                    seekTo(currentPlayback.timestamp)
+                    playWhenReady = !currentPlayback.isVideoPaused
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16 / 9f)
         )
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = {
-            onUpload()
-        }) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Select video"
-            )
-
-            Text(text = "Upload Video" )
-
+        Button(onClick = onUpload) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Select video")
+            Text(text = "Upload Video")
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        VideoListScreen(
-            onSelectVideo = {
-                viewModel.addVideoUri(it)
-                println("file url of selcted video::: $it")
-            },
 
-        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        VideoListScreen(onSelectVideo = { uri ->
+            viewModel.addVideoUri(uri)
+        })
+
         if (isPopupVisible) {
             AlertDialog(
                 onDismissRequest = { isPopupVisible = false },
-                title = {
-                    Text(text = "Room Id")
-                },
+                title = { Text(text = "Room Id") },
                 text = {
                     Column {
                         Text(text = "Room Id : $roomId")
@@ -173,7 +155,7 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
                 },
                 confirmButton = {
                     TextButton(
-                    onClick = {
+                        onClick = {
                             isPopupVisible = false
                             viewModel.joinRoom(roomId) { exists ->
                                 if (exists) {
@@ -182,10 +164,7 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
                             }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "copy"
-                        )
+                        Icon(imageVector = Icons.Default.Share, contentDescription = "copy")
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("ok")
                     }
@@ -198,16 +177,13 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
         }
     }
 
-
-    // Handle back press
     BackHandler {
         showConfirmExitDialog = true
     }
 
     if (showConfirmExitDialog) {
         AlertDialog(
-            onDismissRequest = {
-                },
+            onDismissRequest = { },
             title = { Text("Confirm Exit") },
             text = { Text("Are you sure you want to exit the Watch Party?") },
             confirmButton = {
@@ -215,21 +191,15 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
                     showConfirmExitDialog = false
                     viewModel.exitRoom(roomId, userData.userId)
                     onExit()
-                    // Handle exit logic here
-                    // For example, navigate back or close the screen
                 }) {
                     Text("Yes")
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showConfirmExitDialog = false
-
-                }) {
+                TextButton(onClick = { showConfirmExitDialog = false }) {
                     Text("No")
                 }
             }
         )
     }
-
 }

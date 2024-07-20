@@ -7,11 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import com.autobot.basicapp.database.Playback
 import com.autobot.basicapp.exoplayer.MetaDataReader
 import com.autobot.basicapp.exoplayer.RoomRepository
 import com.autobot.basicapp.exoplayer.VideoItem
 import com.autobot.basicapp.signin.UserData
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,9 +34,17 @@ class MainViewModel @Inject constructor(
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
+    private val _currentPlayback = MutableStateFlow(Playback())
+    val currentPlayback: StateFlow<Playback> = _currentPlayback
     private val _users = MutableStateFlow<List<UserData>>(emptyList())
     val users: StateFlow<List<UserData>> = _users
     private val videoUris = savedStateHandle.getStateFlow("videoUris", emptyList<Uri>())
+
+    private val database = FirebaseDatabase.getInstance()
+
+    fun updateTimestamp(newTimestamp: Long,roomId: String) {
+        repository.updatePlayback(roomId,Playback(newTimestamp,false))
+    }
 
     val videoItems = videoUris.map { uris ->
         uris.map { uri ->
@@ -47,6 +58,17 @@ class MainViewModel @Inject constructor(
 
     init {
         player.prepare()
+    }
+    fun updatePlayback(roomId: String,playback: Playback){
+        viewModelScope.launch {
+        repository.updatePlayback(roomId,playback)
+            listenForPlayback(roomId)
+        }
+    }
+    fun listenForPlayback(roomId: String) {
+        repository.listenForPlayback(roomId) { playback ->
+            _currentPlayback.value = playback
+        }
     }
 
     fun addVideoUri(uri: Uri) {
