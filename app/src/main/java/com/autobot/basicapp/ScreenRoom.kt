@@ -1,5 +1,6 @@
 package com.autobot.basicapp
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -154,9 +155,12 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
 
         }
         Spacer(modifier = Modifier.height(16.dp))
-        VideoListScreen {
+        VideoListScreen(
+            onSelectVideo = {
+                viewModel.playVideo(it)
+            },
 
-        }
+        )
         if (isPopupVisible) {
             AlertDialog(
                 onDismissRequest = { isPopupVisible = false },
@@ -171,7 +175,7 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
                 },
                 confirmButton = {
                     TextButton(
-                        onClick = {
+                    onClick = {
                             isPopupVisible = false
                             viewModel.joinRoom(roomId) { exists ->
                                 if (exists) {

@@ -118,6 +118,8 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.core)
 
+    //workmanger
+    implementation (libs.androidx.work.runtime.ktx)
 
 
 }
