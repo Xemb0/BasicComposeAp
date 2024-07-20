@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -132,18 +131,18 @@ fun getFileName(context: Context, uri: Uri): String? {
 
 @Composable
 fun ProfileImage(photoUrl: String) {
-    val painter: Painter =
-        rememberAsyncImagePainter(ImageRequest.Builder
+    val painter: Painter = // Placeholder while loading
+        rememberAsyncImagePainter(ImageRequest.Builder // Placeholder if loading fails
             (LocalContext.current).data(data = photoUrl).apply(block = fun ImageRequest.Builder.() {
-            placeholder(R.drawable.ic_launcher_background)
-            error(R.drawable.ic_launcher_background)
+            placeholder(R.drawable.ic_launcher_background) // Placeholder while loading
+            error(R.drawable.ic_launcher_background) // Placeholder if loading fails
         }).build()
         )
 
     Image(
         painter = painter,
         contentDescription = "Profile Picture",
-        modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.medium),
+        modifier = Modifier.size(48.dp),
     )
 }
 

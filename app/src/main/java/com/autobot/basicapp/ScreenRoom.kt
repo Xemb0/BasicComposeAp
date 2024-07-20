@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +40,7 @@ import com.autobot.basicapp.signin.UserData
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
 
 @Composable
-fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit) {
+fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->Unit) {
     var isPopupVisible by remember { mutableStateOf(false) }
     val viewModel = hiltViewModel<MainViewModel>()
     val users by viewModel.users.collectAsState()
@@ -140,29 +141,21 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit) {
                 .aspectRatio(16 / 9f)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        IconButton(onClick = {
-            selectVideoLauncher.launch("video/mp4")
+
+        Button(onClick = {
+            onUpload()
         }) {
             Icon(
-                imageVector = Icons.Default.Share,
+                imageVector = Icons.Default.Add,
                 contentDescription = "Select video"
             )
+
+            Text(text = "Upload Video" )
+
         }
         Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(videoItems) { item ->
-                Text(
-                    text = item.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            viewModel.playVideo(item.contentUri)
-                        }
-                        .padding(16.dp)
-                )
-            }
+        VideoListScreen {
+
         }
         if (isPopupVisible) {
             AlertDialog(

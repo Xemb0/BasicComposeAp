@@ -128,6 +128,9 @@ class MainActivity : ComponentActivity() {
                                 userData = userData,
                                 onExit = {
                                     navController.popBackStack()
+                                },
+                                onUpload = {
+                                    navController.navigate(NavScreenUpload)
                                 }
                             )
                         }
@@ -153,6 +156,12 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 }
                             )
+                        }
+
+                        composable<NavScreenUpload> {
+                          ScreenUpload(onExit = {
+                            navController.popBackStack()
+                          })
                         }
                     }
                 }
@@ -218,6 +227,9 @@ class MainActivity : ComponentActivity() {
 @Serializable
 object NavScreenSignUp
 
+
+@Serializable
+object NavScreenUpload
 @Serializable
 data class NavScreenCreateRoom(
     val userId: String,
