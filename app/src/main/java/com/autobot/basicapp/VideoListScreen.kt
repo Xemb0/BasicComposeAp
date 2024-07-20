@@ -31,18 +31,48 @@ fun VideoListScreen(onSelectVideo: (Uri) -> Unit) {
     val movies by playerViewModel.movies.collectAsState()
     val loading by playerViewModel.loading.collectAsState()
     val context = LocalContext.current
+    val downloadProgress by playerViewModel.downloadProgress.collectAsState()
 
     if (loading) {
         LoadingScreen()
     } else {
-        VideoList(movies = movies, onSelectVideo ={
-            onSelectVideo(it)
-        }
-        ,onClicKDownload = { uri,fileName ->
-            playerViewModel.downloadMovieWithNotification(context, uri, fileName)
-        })
+        VideoList(
+            movies = movies,
+            onSelectVideo = { onSelectVideo(getFileUri(context,it)) },
+            onClickDownload = { uri, fileName ->
+                playerViewModel.downloadMovieWithNotification(context, uri, fileName)
+            },
+            getDownloadStatus = { fileName -> playerViewModel.getDownloadStatus(fileName, context) },
+            downloadProgress = downloadProgress
+        )
     }
 }
+
+fun getFileUri(context: Context, fileName: String): Uri {
+    val file = File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), fileName)
+    return Uri.fromFile(file)
+}
+@Composable
+fun VideoList(
+    movies: List<Movie>,
+    onSelectVideo: (String) -> Unit,
+    onClickDownload: (String, String) -> Unit,
+    getDownloadStatus: (String) -> Boolean,
+    downloadProgress: Map<String, Float>
+) {
+    LazyColumn {
+        items(movies) { movie ->
+            VideoItem(
+                movie = movie,
+                onPlay = { uri -> onSelectVideo(uri) },
+                onClickDownload = { uri, fileName -> onClickDownload(uri, fileName) },
+                getDownloadStatus = getDownloadStatus,
+                downloadProgress = downloadProgress
+            )
+        }
+    }
+}
+
 
 @Composable
 fun LoadingScreen() {
@@ -55,32 +85,22 @@ fun LoadingScreen() {
 }
 
 @Composable
-fun VideoList(movies: List<Movie>, onSelectVideo: (Uri) -> Unit,onClicKDownload:(String,String)->Unit ){
-    LazyColumn {
-        items(movies) { movie ->
-            VideoItem(movie = movie, onPlay = { uri ->
-                onSelectVideo(uri)
-            },onClicKDownload = { uri,fileName ->
-                        Log.d("VideoItem", "Downloading ${uri.toString()}")
-                onClicKDownload(uri,fileName)
-            })
-        }
-    }
-}
-
-@Composable
-fun VideoItem(movie: Movie, onPlay: (Uri) -> Unit,onClicKDownload:(String,String)->Unit ) {
-    var isDownloading by remember { mutableStateOf(false) }
-    var downloadProgress by remember { mutableFloatStateOf(0f) }
-    var isDownloaded by remember { mutableStateOf(false) }
-    val fileUri by remember { mutableStateOf<Uri?>(null) }
-
+fun VideoItem(
+    movie: Movie,
+    onPlay: (String) -> Unit,
+    onClickDownload: (String, String) -> Unit,
+    getDownloadStatus: (String) -> Boolean,
+    downloadProgress: Map<String, Float>
+) {
+    val fileName = movie.name
+    val isDownloaded = getDownloadStatus(fileName)
+    val progress = downloadProgress[fileName] ?: 0f
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { fileUri?.let { onPlay(it) } }
+            .clickable {}
             .padding(8.dp)
             .background(MyAppThemeColors.current.myText, RoundedCornerShape(8.dp))
             .padding(8.dp)
@@ -89,9 +109,9 @@ fun VideoItem(movie: Movie, onPlay: (Uri) -> Unit,onClicKDownload:(String,String
             Text(movie.name)
             Spacer(modifier = Modifier.height(4.dp))
 
-            if (isDownloading) {
+            if (!isDownloaded) {
                 LinearProgressIndicator(
-                    progress = { downloadProgress / 100f },
+                    progress = progress / 100f,
                     modifier = Modifier.wrapContentSize(),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -101,12 +121,9 @@ fun VideoItem(movie: Movie, onPlay: (Uri) -> Unit,onClicKDownload:(String,String
             Button(
                 onClick = {
                     if (isDownloaded) {
-                        fileUri?.let {
-                            onPlay(it) }
+                        onPlay(fileName)
                     } else {
-                        isDownloading = true
-                        Log.d("VideoItem", "Downloading ${movie.name}")
-                         onClicKDownload(movie.url,movie.name)
+                        onClickDownload(movie.url, fileName)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -121,19 +138,9 @@ fun VideoItem(movie: Movie, onPlay: (Uri) -> Unit,onClicKDownload:(String,String
             }
         }
     }
-
-    LaunchedEffect(isDownloading) {
-        if (isDownloading) {
-            while (downloadProgress < 100f) {
-                delay(100) // Simulate download delay
-                downloadProgress += 1f // Simulate download progress
-            }
-            isDownloading = false
-            isDownloaded = true
-            // Update fileUri here
-        }
-    }
 }
+
+
 
 fun downloadMovie(context: Context, fileName: String, onProgress: (Float) -> Unit, onComplete: (Boolean) -> Unit) {
     val storage = FirebaseStorage.getInstance()

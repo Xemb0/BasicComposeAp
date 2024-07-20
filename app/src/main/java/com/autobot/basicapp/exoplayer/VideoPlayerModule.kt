@@ -3,6 +3,7 @@ package com.autobot.basicapp.exoplayer
 import android.app.Application
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.autobot.basicapp.viewmodels.MovieRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,5 +30,10 @@ object VideoPlayerModule {
     @ViewModelScoped
     fun provideRoomRepository(): RoomRepository {
         return RoomRepository()
+    }
+    @Provides
+    @ViewModelScoped
+    fun provideMovieRepository(): MovieRepository {
+        return MovieRepository()
     }
 }

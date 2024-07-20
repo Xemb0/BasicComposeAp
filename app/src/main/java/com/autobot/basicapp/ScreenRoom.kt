@@ -1,15 +1,11 @@
 package com.autobot.basicapp
 
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,10 +16,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,18 +28,21 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.ui.PlayerView
 import com.autobot.basicapp.customcomposables.UserView
-import com.autobot.basicapp.exoplayer.MainViewModel
+import com.autobot.basicapp.viewmodels.MainViewModel
 import com.autobot.basicapp.signin.UserData
+import com.autobot.basicapp.viewmodels.PlayerViewModel
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
 
 @Composable
 fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->Unit) {
     var isPopupVisible by remember { mutableStateOf(false) }
     val viewModel = hiltViewModel<MainViewModel>()
+    val playerViewModel: PlayerViewModel = viewModel()
     val users by viewModel.users.collectAsState()
-    val videoItems by viewModel.videoItems.collectAsState()
+//    val currentVideo by playerViewModel.currentVideo.collectAsState()
     var showConfirmExitDialog by remember { mutableStateOf(false) }
 
     val selectVideoLauncher = rememberLauncherForActivityResult(
@@ -157,7 +154,8 @@ fun ScreenRoom(roomId: String, userData: UserData,onExit:()->Unit,onUpload:()->U
         Spacer(modifier = Modifier.height(16.dp))
         VideoListScreen(
             onSelectVideo = {
-                viewModel.playVideo(it)
+                viewModel.addVideoUri(it)
+                println("file url of selcted video::: $it")
             },
 
         )

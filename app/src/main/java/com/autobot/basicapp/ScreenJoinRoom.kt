@@ -25,11 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.autobot.basicapp.exoplayer.MainViewModel
+import com.autobot.basicapp.viewmodels.MainViewModel
 import com.autobot.basicapp.signin.UserData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.time.delay
-import kotlinx.coroutines.withContext
 
 @Composable
 fun ScreenJoinRoom(userData: UserData, onJoinPartyClick: (String) -> Unit, onCancelClick: () -> Unit) {

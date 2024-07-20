@@ -23,7 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.autobot.basicapp.exoplayer.MainViewModel
+import com.autobot.basicapp.viewmodels.MainViewModel
 import com.autobot.basicapp.signin.GoogleAuthUiClient
 import com.autobot.basicapp.signin.SignInScreen
 import com.autobot.basicapp.signin.UserData

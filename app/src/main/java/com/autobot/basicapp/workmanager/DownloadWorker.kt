@@ -27,11 +27,7 @@ class DownloadWorker(
                 onProgress = { progress ->
                     // Ensure notifications are updated
                     viewModel.showNotification(applicationContext, progress.toInt())
-                    val directory = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-                    val files = directory?.listFiles()
-                    files?.forEach { file ->
-                        Log.d("DownloadedVideo", "File: ${file.name}")
-                    }
+                    viewModel.updateProgress(progress, fileName)
 
                 },
                 onComplete = { success ->

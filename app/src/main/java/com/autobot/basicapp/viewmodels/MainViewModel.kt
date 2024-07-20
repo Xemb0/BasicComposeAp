@@ -1,4 +1,4 @@
-package com.autobot.basicapp.exoplayer
+package com.autobot.basicapp.viewmodels
 
 import android.net.Uri
 import android.util.Log
@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import com.autobot.basicapp.exoplayer.MetaDataReader
+import com.autobot.basicapp.exoplayer.RoomRepository
+import com.autobot.basicapp.exoplayer.VideoItem
 import com.autobot.basicapp.signin.UserData
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +33,6 @@ class MainViewModel @Inject constructor(
 
     private val _users = MutableStateFlow<List<UserData>>(emptyList())
     val users: StateFlow<List<UserData>> = _users
-
     private val videoUris = savedStateHandle.getStateFlow("videoUris", emptyList<Uri>())
 
     val videoItems = videoUris.map { uris ->
@@ -48,8 +50,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun addVideoUri(uri: Uri) {
-        savedStateHandle["videoUris"] = videoUris.value + uri
+        savedStateHandle["videoUris"] = videoUris.value +  uri
         player.addMediaItem(MediaItem.fromUri(uri))
+        playVideo(uri)
     }
 
     fun playVideo(uri: Uri) {
