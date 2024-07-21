@@ -60,22 +60,15 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
         viewModel.listenForPlayback(roomId)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(4.dp)
-    ) {
-        Box(
+    Column {
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 48.dp)
                 .clip(RoundedCornerShape(24.dp))
                 .background(MyAppThemeColors.current.tertiary)
-                .padding(8.dp)
+                .padding(4.dp)
         ) {
             Row(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
@@ -94,7 +87,6 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
             IconButton(
                 onClick = { isPopupVisible = true },
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
                     .padding(2.dp)
                     .background(MyAppThemeColors.current.primary)
                     .clip(RoundedCornerShape(24.dp))
@@ -102,129 +94,134 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
             }
         }
+        Row {
 
-        AndroidView(
-            factory = { context ->
-                // Create a PlayerView instance
-                val playerView = PlayerView(context)
 
-                // Set the player property
-                playerView.player = viewModel.player
+            Column(
+                modifier = Modifier
+            ) {
+                AndroidView(
+                    factory = { context ->
+                        // Create a PlayerView instance
+                        val playerView = PlayerView(context)
 
-                // Add a listener to the player
-                viewModel.player.addListener(object : Player.Listener {
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        super.onIsPlayingChanged(isPlaying)
-                        val playback = Playback(
-                            timestamp = viewModel.player.currentPosition,
-                            videoPaused = isPlaying
-                        )
-                        viewModel.updatePlayback(roomId, playback)
+                        // Set the player property
+                        playerView.player = viewModel.player
 
-                    }
+                        // Add a listener to the player
+                        viewModel.player.addListener(object : Player.Listener {
+                            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                                super.onIsPlayingChanged(isPlaying)
+                                val playback = Playback(
+                                    timestamp = viewModel.player.currentPosition,
+                                    videoPaused = isPlaying
+                                )
+                                viewModel.updatePlayback(roomId, playback)
 
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        if (playbackState == Player.STATE_READY) {
-                            // Handle STATE_READY state if needed
-                            val playback = Playback(
-                                timestamp = viewModel.player.currentPosition,
-                                videoPaused = viewModel.player.isPlaying
-                            )
-                            viewModel.updatePlayback(roomId, playback)
-                        }
-                    }
+                            }
 
-                    override fun onSeekForwardIncrementChanged(seekForwardIncrementMs: Long) {
-                        super.onSeekForwardIncrementChanged(seekForwardIncrementMs)
-                        val playback = Playback(
-                            timestamp = viewModel.player.currentPosition,
-                            videoPaused = viewModel.player.isPlaying
-                        )
-                        viewModel.updatePlayback(roomId, playback)
-
-                    }
-
-                    override fun onSeekBackIncrementChanged(seekBackIncrementMs: Long) {
-                        super.onSeekBackIncrementChanged(seekBackIncrementMs)
-                        val playback = Playback(
-                            timestamp = viewModel.player.currentPosition,
-                            videoPaused = !viewModel.player.isPlaying
-                        )
-                        viewModel.updatePlayback(roomId, playback)
-
-                    }
-
-                    override fun onEvents(player: Player, events: Player.Events) {
-                        super.onEvents(player, events)
-
-                    }
-                })
-
-                // Return the PlayerView instance
-                playerView
-            }
-                ,
-            update = { playerView ->
-                playerView.player?.apply {
-                    // Update the player state
-                    playWhenReady = currentPlayback.videoPaused
-                    // Only seek to the new timestamp if it's different from the last known one
-                    if (lastKnownTimestamp !=currentPlayback.timestamp) {
-                        seekTo(currentPlayback.timestamp)
-                    playWhenReady = currentPlayback.videoPaused
-                        lastKnownTimestamp = currentPlayback.timestamp
-                    }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16 / 9f)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(onClick = onUpload) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Select video")
-            Text(text = "Upload Video")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        VideoListScreen(onSelectVideo = { uri ->
-            viewModel.addVideoUri(uri)
-        })
-
-        if (isPopupVisible) {
-            AlertDialog(
-                onDismissRequest = { isPopupVisible = false },
-                title = { Text(text = "Room Id") },
-                text = {
-                    Column {
-                        Text(text = "Room Id : $roomId")
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            isPopupVisible = false
-                            viewModel.joinRoom(roomId) { exists ->
-                                if (exists) {
-                                    viewModel.listenForRoomUsers(roomId)
+                            override fun onPlaybackStateChanged(playbackState: Int) {
+                                if (playbackState == Player.STATE_READY) {
+                                    // Handle STATE_READY state if needed
+                                    val playback = Playback(
+                                        timestamp = viewModel.player.currentPosition,
+                                        videoPaused = viewModel.player.isPlaying
+                                    )
+                                    viewModel.updatePlayback(roomId, playback)
                                 }
                             }
+
+                            override fun onSeekForwardIncrementChanged(seekForwardIncrementMs: Long) {
+                                super.onSeekForwardIncrementChanged(seekForwardIncrementMs)
+                                val playback = Playback(
+                                    timestamp = viewModel.player.currentPosition,
+                                    videoPaused = viewModel.player.isPlaying
+                                )
+                                viewModel.updatePlayback(roomId, playback)
+
+                            }
+
+                            override fun onSeekBackIncrementChanged(seekBackIncrementMs: Long) {
+                                super.onSeekBackIncrementChanged(seekBackIncrementMs)
+                                val playback = Playback(
+                                    timestamp = viewModel.player.currentPosition,
+                                    videoPaused = !viewModel.player.isPlaying
+                                )
+                                viewModel.updatePlayback(roomId, playback)
+
+                            }
+
+                            override fun onEvents(player: Player, events: Player.Events) {
+                                super.onEvents(player, events)
+
+                            }
+                        })
+
+                        // Return the PlayerView instance
+                        playerView
+                    },
+                    update = { playerView ->
+                        playerView.player?.apply {
+                            // Update the player state
+                            playWhenReady = currentPlayback.videoPaused
+                            // Only seek to the new timestamp if it's different from the last known one
+                            if (lastKnownTimestamp != currentPlayback.timestamp) {
+                                seekTo(currentPlayback.timestamp)
+                                playWhenReady = currentPlayback.videoPaused
+                                lastKnownTimestamp = currentPlayback.timestamp
+                            }
                         }
-                    ) {
-                        Icon(imageVector = Icons.Default.Share, contentDescription = "copy")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("ok")
-                    }
-                },
-                containerColor = Color.White,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .border(2.dp, Color.Gray, RoundedCornerShape(24.dp))
-            )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(onClick = onUpload) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Select video")
+                    Text(text = "Upload Video")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                VideoListScreen(onSelectVideo = { uri ->
+                    viewModel.addVideoUri(uri)
+                })
+
+                if (isPopupVisible) {
+                    AlertDialog(
+                        onDismissRequest = { isPopupVisible = false },
+                        title = { Text(text = "Room Id") },
+                        text = {
+                            Column {
+                                Text(text = "Room Id : $roomId")
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    isPopupVisible = false
+                                    viewModel.joinRoom(roomId) { exists ->
+                                        if (exists) {
+                                            viewModel.listenForRoomUsers(roomId)
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(imageVector = Icons.Default.Share, contentDescription = "copy")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("ok")
+                            }
+                        },
+                        containerColor = Color.White,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(24.dp))
+                            .border(2.dp, Color.Gray, RoundedCornerShape(24.dp))
+                    )
+                }
+            }
         }
     }
 
