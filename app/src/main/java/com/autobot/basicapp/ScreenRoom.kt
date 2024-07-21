@@ -65,43 +65,7 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
             .fillMaxSize()
             .padding(4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 48.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MyAppThemeColors.current.tertiary)
-                .padding(8.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                LazyRow(modifier = Modifier.weight(1f)) {
-                    items(users) { item ->
-                        UserView(
-                            userData = item,
-                            isStreaming = false,
-                            onClick = { viewModel.toggleStreaming() }
-                        )
-                    }
-                }
-            }
 
-            IconButton(
-                onClick = { isPopupVisible = true },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(2.dp)
-                    .background(MyAppThemeColors.current.primary)
-                    .clip(RoundedCornerShape(24.dp))
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
-            }
-        }
 
         AndroidView(
             factory = { context ->
@@ -180,6 +144,43 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
                 .fillMaxWidth()
                 .aspectRatio(16 / 9f)
         )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 48.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(MyAppThemeColors.current.tertiary)
+                .padding(8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                LazyRow(modifier = Modifier.weight(1f)) {
+                    items(users) { item ->
+                        UserView(
+                            userData = item,
+                            isStreaming = false,
+                            onClick = { viewModel.toggleStreaming() }
+                        )
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = { isPopupVisible = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(2.dp)
+                    .background(MyAppThemeColors.current.primary)
+                    .clip(RoundedCornerShape(24.dp))
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

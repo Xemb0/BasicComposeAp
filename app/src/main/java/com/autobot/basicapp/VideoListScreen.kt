@@ -38,12 +38,20 @@ fun VideoListScreen(onSelectVideo: (Uri) -> Unit) {
     } else {
         VideoList(
             movies = movies,
-            onSelectVideo = { onSelectVideo(getFileUri(context,it)) },
+            onSelectVideo = { onSelectVideo(getFileUri(context, it)) },
             onClickDownload = { uri, fileName ->
                 playerViewModel.downloadMovieWithNotification(context, uri, fileName)
             },
             getDownloadStatus = { fileName -> playerViewModel.getDownloadStatus(fileName, context) },
-            downloadProgress = downloadProgress
+            downloadProgress = downloadProgress,
+            onDelete = { fileName ->
+                deleteMovie(context, fileName) { success ->
+                    if (success) {
+                        // Update the UI or view model after successful deletion
+                        playerViewModel.refreshMovies() // Example function to refresh the movie list
+                    }
+                }
+            }
         )
     }
 }
@@ -58,7 +66,8 @@ fun VideoList(
     onSelectVideo: (String) -> Unit,
     onClickDownload: (String, String) -> Unit,
     getDownloadStatus: (String) -> Boolean,
-    downloadProgress: Map<String, Float>
+    downloadProgress: Map<String, Float>,
+    onDelete: (String) -> Unit // Add this parameter for handling file deletion
 ) {
     LazyColumn {
         items(movies) { movie ->
@@ -67,7 +76,8 @@ fun VideoList(
                 onPlay = { uri -> onSelectVideo(uri) },
                 onClickDownload = { uri, fileName -> onClickDownload(uri, fileName) },
                 getDownloadStatus = getDownloadStatus,
-                downloadProgress = downloadProgress
+                downloadProgress = downloadProgress,
+                onDelete = onDelete // Pass the delete function
             )
         }
     }
@@ -90,7 +100,8 @@ fun VideoItem(
     onPlay: (String) -> Unit,
     onClickDownload: (String, String) -> Unit,
     getDownloadStatus: (String) -> Boolean,
-    downloadProgress: Map<String, Float>
+    downloadProgress: Map<String, Float>,
+    onDelete: (String) -> Unit // Add this parameter for handling file deletion
 ) {
     val fileName = movie.name
     val isDownloaded = getDownloadStatus(fileName)
@@ -106,13 +117,13 @@ fun VideoItem(
             .padding(8.dp)
     ) {
         Column {
-            Text(movie.name)
+            Text(movie.name.take(20))
             Spacer(modifier = Modifier.height(4.dp))
 
             if (!isDownloaded) {
                 LinearProgressIndicator(
                     progress = progress / 100f,
-                    modifier = Modifier.wrapContentSize(),
+                    modifier = Modifier.width(150.dp),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -136,10 +147,20 @@ fun VideoItem(
             ) {
                 Text(text = if (isDownloaded) "Play" else "Download")
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Delete Button
+            Button(
+                onClick = {
+                    onDelete(fileName) // Handle file deletion
+                },
+            ) {
+                Text(text = "Delete")
+            }
         }
     }
 }
-
 
 
 fun downloadMovie(context: Context, fileName: String, onProgress: (Float) -> Unit, onComplete: (Boolean) -> Unit) {
@@ -154,5 +175,14 @@ fun downloadMovie(context: Context, fileName: String, onProgress: (Float) -> Uni
     }.addOnProgressListener { snapshot ->
         val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toFloat()
         onProgress(progress)
+    }
+}
+fun deleteMovie(context: Context, fileName: String, onComplete: (Boolean) -> Unit) {
+    val file = File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), fileName)
+    if (file.exists()) {
+        val deleted = file.delete()
+        onComplete(deleted)
+    } else {
+        onComplete(false)
     }
 }

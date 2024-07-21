@@ -139,5 +139,9 @@ class PlayerViewModel : ViewModel() {
         Log.d("PlayerViewModel", "Notification shown with progress $progress%")
     }
 
+    fun refreshMovies() {
+        fetchMovies()
+    }
+
 
 }
