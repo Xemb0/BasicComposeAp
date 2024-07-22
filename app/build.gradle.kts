@@ -11,7 +11,7 @@ plugins {
 }
 
 android {
-    namespace = "com.autobot.basicapp"
+    namespace = "com.autobot.watchparty"
     compileSdk = 35
 
     defaultConfig {
@@ -34,6 +34,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
