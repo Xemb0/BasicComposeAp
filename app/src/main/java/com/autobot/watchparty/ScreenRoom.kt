@@ -1,6 +1,8 @@
-package com.autobot.watchparty
+package com.autobot.basicapp
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,16 +27,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
-import com.autobot.watchparty.customcomposables.UserView
-import com.autobot.watchparty.database.Playback
-import com.autobot.watchparty.viewmodels.MainViewModel
-import com.autobot.watchparty.signin.UserData
-import com.autobot.watchparty.viewmodels.PlayerViewModel
+import com.autobot.basicapp.customcomposables.UserView
+import com.autobot.basicapp.database.Playback
+import com.autobot.basicapp.viewmodels.MainViewModel
+import com.autobot.basicapp.signin.UserData
+import com.autobot.basicapp.viewmodels.PlayerViewModel
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -58,7 +65,43 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
             .fillMaxSize()
             .padding(4.dp)
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 48.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(MyAppThemeColors.current.tertiary)
+                .padding(8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                LazyRow(modifier = Modifier.weight(1f)) {
+                    items(users) { item ->
+                        UserView(
+                            userData = item,
+                            isStreaming = false,
+                            onClick = { viewModel.toggleStreaming() }
+                        )
+                    }
+                }
+            }
 
+            IconButton(
+                onClick = { isPopupVisible = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(2.dp)
+                    .background(MyAppThemeColors.current.primary)
+                    .clip(RoundedCornerShape(24.dp))
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
+            }
+        }
 
         AndroidView(
             factory = { context ->
@@ -137,43 +180,6 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
                 .fillMaxWidth()
                 .aspectRatio(16 / 9f)
         )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 48.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MyAppThemeColors.current.tertiary)
-                .padding(8.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                LazyRow(modifier = Modifier.weight(1f)) {
-                    items(users) { item ->
-                        UserView(
-                            userData = item,
-                            isStreaming = false,
-                            onClick = { viewModel.toggleStreaming() }
-                        )
-                    }
-                }
-            }
-
-            IconButton(
-                onClick = { isPopupVisible = true },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(2.dp)
-                    .background(MyAppThemeColors.current.primary)
-                    .clip(RoundedCornerShape(24.dp))
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
-            }
-        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
