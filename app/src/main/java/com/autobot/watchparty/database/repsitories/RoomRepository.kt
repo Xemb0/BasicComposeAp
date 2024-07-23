@@ -1,9 +1,9 @@
-package com.autobot.watchparty.exoplayer
+package com.autobot.watchparty.database.repsitories
 
 import android.util.Log
 import com.autobot.watchparty.database.Playback
+import com.autobot.watchparty.database.UserData
 import com.google.firebase.firestore.FirebaseFirestore
-import com.autobot.watchparty.signin.UserData
 import kotlinx.serialization.json.Json
 
 class RoomRepository {
@@ -115,32 +115,4 @@ class RoomRepository {
             }
     }
 
-
-
-    fun listenForPlayback(roomId: String, onUpdate: (Playback) -> Unit) {
-        firestore.collection("rooms").document(roomId).collection("playback").document("playback")
-            .addSnapshotListener { snapshot, exception ->
-                if (exception != null) {
-                    Log.e("Firestore", "Error getting playback: ", exception)
-                    return@addSnapshotListener
-                }
-                snapshot?.let { documentSnapshot ->
-                    val playback = documentSnapshot.toObject(Playback::class.java)
-                    playback?.let {
-                        Log.d("Firestore", "Playback updated: ${playback.timestamp}")
-                        onUpdate(playback)
-                    }
-                } ?: Log.d("Firestore", "No playback found")
-            }
-    }
-    fun updatePlayback(roomId: String,playback: Playback) {
-        firestore.collection("rooms").document(roomId).collection("playback").document("playback")
-            .set(playback)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Playback updated successfully")
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Error updating playback", e)
-            }
-    }
 }

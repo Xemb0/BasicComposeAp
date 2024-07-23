@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.mainscreens
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.autobot.watchparty.viewmodels.MainViewModel
-import com.autobot.watchparty.signin.UserData
+import com.autobot.watchparty.database.UserData
+import com.autobot.watchparty.database.viewmodels.MainViewModel
 
 @Composable
 fun ScreenJoinRoom(userData: UserData, onJoinPartyClick: (String) -> Unit, onCancelClick: () -> Unit) {

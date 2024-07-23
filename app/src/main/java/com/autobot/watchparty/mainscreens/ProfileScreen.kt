@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.mainscreens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.autobot.watchparty.signin.UserData
+import com.autobot.watchparty.database.UserData
 import com.launcher.arclauncher.compose.theme.MyAppThemeSizes
 
 @Composable
@@ -63,7 +63,7 @@ fun ScreenCreateRoom(
         }
 
         Button(onClick = {
-            onCreateRoom(System.currentTimeMillis().toString())
+            onCreateRoom("123")
         }) {
             Text(text = "Host New Party")
         }

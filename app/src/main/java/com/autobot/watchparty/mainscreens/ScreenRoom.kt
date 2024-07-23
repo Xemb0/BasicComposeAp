@@ -1,8 +1,6 @@
-package com.autobot.basicapp
+package com.autobot.watchparty.mainscreens
 
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,23 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.PlayerView
-import com.autobot.basicapp.customcomposables.UserView
-import com.autobot.basicapp.database.Playback
-import com.autobot.basicapp.viewmodels.MainViewModel
-import com.autobot.basicapp.signin.UserData
-import com.autobot.basicapp.viewmodels.PlayerViewModel
+import com.autobot.watchparty.customviews.UserView
+import com.autobot.watchparty.database.UserData
+import com.autobot.watchparty.exoplayer.ExoPlayerScreen
+import com.autobot.watchparty.database.viewmodels.MainViewModel
+import com.autobot.watchparty.database.viewmodels.PlayerViewModel
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -49,15 +39,15 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
     var isPopupVisible by remember { mutableStateOf(false) }
     var lastKnownTimestamp: Long = -1L
     val viewModel = hiltViewModel<MainViewModel>()
-    val playerViewModel: PlayerViewModel = viewModel()
+    val playerViewModel = hiltViewModel<PlayerViewModel>()
     val users by viewModel.users.collectAsState()
     val currentPlayback by viewModel.currentPlayback.collectAsState()
     var showConfirmExitDialog by remember { mutableStateOf(false) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
+
     LaunchedEffect(roomId) {
         viewModel.listenForRoomUsers(roomId)
-        viewModel.listenForPlayback(roomId)
     }
 
     Column(
@@ -65,6 +55,7 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
             .fillMaxSize()
             .padding(4.dp)
     ) {
+        ExoPlayerScreen(playerViewModel, roomId)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,83 +94,6 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
             }
         }
 
-        AndroidView(
-            factory = { context ->
-                // Create a PlayerView instance
-                val playerView = PlayerView(context)
-
-                // Set the player property
-                playerView.player = viewModel.player
-
-                // Add a listener to the player
-                viewModel.player.addListener(object : Player.Listener {
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        super.onIsPlayingChanged(isPlaying)
-                        val playback = Playback(
-                            timestamp = viewModel.player.currentPosition,
-                            videoPaused = isPlaying
-                        )
-                        viewModel.updatePlayback(roomId, playback)
-
-                    }
-
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        if (playbackState == Player.STATE_READY) {
-                            // Handle STATE_READY state if needed
-                            val playback = Playback(
-                                timestamp = viewModel.player.currentPosition,
-                                videoPaused = viewModel.player.isPlaying
-                            )
-                            viewModel.updatePlayback(roomId, playback)
-                        }
-                    }
-
-                    override fun onSeekForwardIncrementChanged(seekForwardIncrementMs: Long) {
-                        super.onSeekForwardIncrementChanged(seekForwardIncrementMs)
-                        val playback = Playback(
-                            timestamp = viewModel.player.currentPosition,
-                            videoPaused = viewModel.player.isPlaying
-                        )
-                        viewModel.updatePlayback(roomId, playback)
-
-                    }
-
-                    override fun onSeekBackIncrementChanged(seekBackIncrementMs: Long) {
-                        super.onSeekBackIncrementChanged(seekBackIncrementMs)
-                        val playback = Playback(
-                            timestamp = viewModel.player.currentPosition,
-                            videoPaused = !viewModel.player.isPlaying
-                        )
-                        viewModel.updatePlayback(roomId, playback)
-
-                    }
-
-                    override fun onEvents(player: Player, events: Player.Events) {
-                        super.onEvents(player, events)
-
-                    }
-                })
-
-                // Return the PlayerView instance
-                playerView
-            }
-                ,
-            update = { playerView ->
-                playerView.player?.apply {
-                    // Update the player state
-                    playWhenReady = currentPlayback.videoPaused
-                    // Only seek to the new timestamp if it's different from the last known one
-                    if (lastKnownTimestamp !=currentPlayback.timestamp) {
-                        seekTo(currentPlayback.timestamp)
-                    playWhenReady = currentPlayback.videoPaused
-                        lastKnownTimestamp = currentPlayback.timestamp
-                    }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16 / 9f)
-        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -191,7 +105,7 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
         Spacer(modifier = Modifier.height(16.dp))
 
         VideoListScreen(onSelectVideo = { uri ->
-            viewModel.addVideoUri(uri)
+            playerViewModel.addVideoUri(uri)
         })
 
         if (isPopupVisible) {

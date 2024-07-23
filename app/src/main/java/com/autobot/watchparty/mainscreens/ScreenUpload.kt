@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.mainscreens
 
 import android.content.Context
 import android.net.Uri
@@ -26,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.autobot.watchparty.database.viewmodels.MovieViewModel
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
@@ -35,6 +37,7 @@ fun ScreenUpload(onExit: () -> Unit) {
     var progress by remember { mutableStateOf(0f) }
     var isUploading by remember { mutableStateOf(false) }
     var fileName by remember { mutableStateOf<String?>(null) }
+    val movieViewModel: MovieViewModel = viewModel()
 
     if (showConfirmExitDialog) {
         AlertDialog(
@@ -83,8 +86,7 @@ fun ScreenUpload(onExit: () -> Unit) {
                 uri?.let {
                     fileName = getFileName(context, it) ?: UUID.randomUUID().toString()
                     if (fileName != null) {
-                        uploadMovie(it,
-                            fileName!!, // Ensure fileName is not null
+                        movieViewModel.uploadMovie("123",it,fileName.toString(),
                             onProgress = { progressValue ->
                                 isUploading = true
                                 progress = progressValue
@@ -122,30 +124,3 @@ fun getFileName(context: Context, uri: Uri): String? {
     return fileName
 }
 
-fun uploadMovie(uri: Uri, fileName: String, onProgress: (Float) -> Unit, onComplete: (Uri?) -> Unit) {
-    val storage = FirebaseStorage.getInstance()
-    val storageRef = storage.reference
-    val movieRef = storageRef.child("movies/$fileName")
-
-    val uploadTask = movieRef.putFile(uri)
-
-    uploadTask.addOnSuccessListener {
-        movieRef.downloadUrl.addOnSuccessListener { downloadUri ->
-            onComplete(downloadUri)
-        }.addOnFailureListener {
-            onComplete(null)
-        }
-    }.addOnFailureListener {
-        onComplete(null)
-    }
-
-    uploadTask.addOnProgressListener { snapshot ->
-        val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toFloat()
-        onProgress(progress)
-    }
-}
-
-@Composable
-fun DownloadScreen(onDownload: (String) -> Unit) {
-    // UI for downloading the movie file
-}

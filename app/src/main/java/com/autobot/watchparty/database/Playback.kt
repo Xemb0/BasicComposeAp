@@ -6,5 +6,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Playback(
     val timestamp: Long=0,
-    val videoPaused: Boolean = true
+    val videoPaused: Boolean = true,
+    val movieName: String = ""
 ): Parcelable

@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.storageacess
 
 import android.net.Uri
 import com.google.firebase.storage.FirebaseStorage

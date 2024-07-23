@@ -1,4 +1,4 @@
-package com.autobot.watchparty.customcomposables
+package com.autobot.watchparty.customviews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.autobot.watchparty.signin.UserData
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -27,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.autobot.watchparty.R
+import com.autobot.watchparty.database.UserData
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
 import com.launcher.arclauncher.compose.theme.MyAppThemeSizes
 
@@ -40,7 +40,6 @@ fun UserView(
     var streaming by remember { mutableStateOf(isStreaming) }
 
     Column(
-
         modifier = modifier
             .wrapContentSize()
             .clip(RoundedCornerShape(24.dp))

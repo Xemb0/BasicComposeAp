@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.database.room
 
 import com.google.firebase.firestore.FirebaseFirestore
 

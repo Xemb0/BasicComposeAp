@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.mainscreens
 
 import android.os.Bundle
 import android.widget.Toast
@@ -23,10 +23,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.autobot.watchparty.viewmodels.MainViewModel
+import com.autobot.watchparty.database.UserData
+import com.autobot.watchparty.database.viewmodels.MainViewModel
 import com.autobot.watchparty.signin.GoogleAuthUiClient
 import com.autobot.watchparty.signin.SignInScreen
-import com.autobot.watchparty.signin.UserData
 import com.google.android.gms.auth.api.identity.Identity
 import com.launcher.arclauncher.compose.theme.MyAppThemeComposable
 import com.plcoding.composegooglesignincleanarchitecture.presentation.sign_in.SignInViewModel

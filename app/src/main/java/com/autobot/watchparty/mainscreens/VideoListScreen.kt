@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.mainscreens
 
 import android.content.Context
 import android.net.Uri
@@ -17,18 +17,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.autobot.watchparty.database.Movie
-import com.autobot.watchparty.viewmodels.PlayerViewModel
+import com.autobot.watchparty.database.viewmodels.MovieViewModel
 import com.google.firebase.storage.FirebaseStorage
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
 import java.io.File
 
 @Composable
 fun VideoListScreen(onSelectVideo: (Uri) -> Unit) {
-    val playerViewModel: PlayerViewModel = viewModel()
-    val movies by playerViewModel.movies.collectAsState()
-    val loading by playerViewModel.loading.collectAsState()
+    val movieViewModel: MovieViewModel = viewModel()
+    val movies by movieViewModel.movieList.collectAsState()
+    val loading by movieViewModel.loading.collectAsState()
     val context = LocalContext.current
-    val downloadProgress by playerViewModel.downloadProgress.collectAsState()
+    val downloadProgress by movieViewModel.downloadProgress.collectAsState()
+    var showConfirmExitDialog by remember { mutableStateOf(false) }
+
+    movieViewModel.listenForMoviesUpdate("123")
 
     if (loading) {
         LoadingScreen()
@@ -37,15 +40,14 @@ fun VideoListScreen(onSelectVideo: (Uri) -> Unit) {
             movies = movies,
             onSelectVideo = { onSelectVideo(getFileUri(context, it)) },
             onClickDownload = { uri, fileName ->
-                playerViewModel.downloadMovieWithNotification(context, uri, fileName)
+                movieViewModel.downloadMovieWithNotification(context, "123", uri, fileName)
             },
-            getDownloadStatus = { fileName -> playerViewModel.getDownloadStatus(fileName, context) },
+            getDownloadStatus = { fileName -> movieViewModel.getDownloadStatus(fileName, context) },
             downloadProgress = downloadProgress,
             onDelete = { fileName ->
                 deleteMovie(context, fileName) { success ->
                     if (success) {
-                        // Update the UI or view model after successful deletion
-                        playerViewModel.refreshMovies() // Example function to refresh the movie list
+                        // Optionally handle the success scenario
                     }
                 }
             }
@@ -160,20 +162,7 @@ fun VideoItem(
 }
 
 
-fun downloadMovie(context: Context, fileName: String, onProgress: (Float) -> Unit, onComplete: (Boolean) -> Unit) {
-    val storage = FirebaseStorage.getInstance()
-    val storageRef = storage.reference.child("movies/$fileName")
-    val localFile = File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), fileName)
 
-    storageRef.getFile(localFile).addOnSuccessListener {
-        onComplete(true)
-    }.addOnFailureListener {
-        onComplete(false)
-    }.addOnProgressListener { snapshot ->
-        val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toFloat()
-        onProgress(progress)
-    }
-}
 fun deleteMovie(context: Context, fileName: String, onComplete: (Boolean) -> Unit) {
     val file = File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES), fileName)
     if (file.exists()) {

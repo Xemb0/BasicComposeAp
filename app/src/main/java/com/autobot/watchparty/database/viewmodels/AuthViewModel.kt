@@ -1,4 +1,4 @@
-package com.autobot.watchparty
+package com.autobot.watchparty.database.viewmodels
 
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.autobot.watchparty.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
