@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,7 +34,7 @@ import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
 @Composable
-fun ScreenUpload(onExit: () -> Unit) {
+fun ScreenUpload() {
     var showConfirmExitDialog by remember { mutableStateOf(false) }
     var progress by remember { mutableStateOf(0f) }
     var isUploading by remember { mutableStateOf(false) }
@@ -43,11 +45,10 @@ fun ScreenUpload(onExit: () -> Unit) {
         AlertDialog(
             onDismissRequest = {},
             title = { Text("Confirm Exit") },
-            text = { Text("Are you sure you want to exit? Upload will be canceled.") },
+            text = { Text("Are you sure you want to Cancel The upload? ") },
             confirmButton = {
                 TextButton(onClick = {
                     showConfirmExitDialog = false
-                    onExit()
                 }) {
                     Text("Yes")
                 }
@@ -63,14 +64,14 @@ fun ScreenUpload(onExit: () -> Unit) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         if (isUploading) {
             Text("Uploading... ${progress.toInt()}%", fontSize = 18.sp)
             Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator(
+            LinearProgressIndicator(
                 progress = { progress / 100f }
             )
             Button(onClick = {
@@ -95,7 +96,6 @@ fun ScreenUpload(onExit: () -> Unit) {
                                 isUploading = false
                                 if (downloadUri != null) {
                                     Toast.makeText(context, "Upload Complete", Toast.LENGTH_SHORT).show()
-                                    onExit()
                                 } else {
                                     Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
                                 }

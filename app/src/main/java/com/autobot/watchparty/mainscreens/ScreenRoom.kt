@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -32,7 +33,6 @@ import com.autobot.watchparty.exoplayer.ExoPlayerScreen
 import com.autobot.watchparty.database.viewmodels.MainViewModel
 import com.autobot.watchparty.database.viewmodels.PlayerViewModel
 import com.launcher.arclauncher.compose.theme.MyAppThemeColors
-
 @OptIn(UnstableApi::class)
 @Composable
 fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload: () -> Unit) {
@@ -43,70 +43,83 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
     val users by viewModel.users.collectAsState()
     val currentPlayback by viewModel.currentPlayback.collectAsState()
     var showConfirmExitDialog by remember { mutableStateOf(false) }
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-
 
     LaunchedEffect(roomId) {
         viewModel.listenForRoomUsers(roomId)
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(4.dp)
     ) {
-        ExoPlayerScreen(playerViewModel, roomId)
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 48.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MyAppThemeColors.current.tertiary)
-                .padding(8.dp)
+                .fillMaxSize()
+                .padding(bottom = 80.dp) // Ensure there's enough space for the floating button
         ) {
-            Row(
+            ExoPlayerScreen(playerViewModel, roomId)
+            Box(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 48.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MyAppThemeColors.current.tertiary)
+                    .padding(8.dp)
             ) {
-                LazyRow(modifier = Modifier.weight(1f)) {
-                    items(users) { item ->
-                        UserView(
-                            userData = item,
-                            isStreaming = false,
-                            onClick = { viewModel.toggleStreaming() }
-                        )
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    LazyRow(modifier = Modifier.weight(1f)) {
+                        items(users) { item ->
+                            UserView(
+                                userData = item,
+                                isStreaming = false,
+                                onClick = { viewModel.toggleStreaming() }
+                            )
+                        }
                     }
+                }
+
+                IconButton(
+                    onClick = { isPopupVisible = true },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(2.dp)
+                        .background(MyAppThemeColors.current.primary)
+                        .clip(RoundedCornerShape(24.dp))
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
                 }
             }
 
-            IconButton(
-                onClick = { isPopupVisible = true },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(2.dp)
-                    .background(MyAppThemeColors.current.primary)
-                    .clip(RoundedCornerShape(24.dp))
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add User")
-            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Ensure this occupies space, so the floating button appears correctly
+            ScreenUpload()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            VideoListScreen(onSelectVideo = { uri ->
+                playerViewModel.addVideoUri(uri)
+            })
         }
 
+        // Floating Upload Button
+        FloatingActionButton(
+            onClick = { onUpload() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MyAppThemeColors.current.primary
+        ) {
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(onClick = onUpload) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Select video")
-            Text(text = "Upload Video")
+            Icon(imageVector = Icons.Default.Share, contentDescription = "Upload")
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        VideoListScreen(onSelectVideo = { uri ->
-            playerViewModel.addVideoUri(uri)
-        })
 
         if (isPopupVisible) {
             AlertDialog(
@@ -129,9 +142,9 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
                             }
                         }
                     ) {
-                        Icon(imageVector = Icons.Default.Share, contentDescription = "copy")
+                        Icon(imageVector = Icons.Default.Share, contentDescription = "Copy")
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("ok")
+                        Text("OK")
                     }
                 },
                 containerColor = Color.White,
@@ -140,31 +153,31 @@ fun ScreenRoom(roomId: String, userData: UserData, onExit: () -> Unit, onUpload:
                     .border(2.dp, Color.Gray, RoundedCornerShape(24.dp))
             )
         }
+
+        if (showConfirmExitDialog) {
+            AlertDialog(
+                onDismissRequest = { },
+                title = { Text("Confirm Exit") },
+                text = { Text("Are you sure you want to exit the Watch Party?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showConfirmExitDialog = false
+                        viewModel.exitRoom(roomId, userData.userId)
+                        onExit()
+                    }) {
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmExitDialog = false }) {
+                        Text("No")
+                    }
+                }
+            )
+        }
     }
 
     BackHandler {
         showConfirmExitDialog = true
-    }
-
-    if (showConfirmExitDialog) {
-        AlertDialog(
-            onDismissRequest = { },
-            title = { Text("Confirm Exit") },
-            text = { Text("Are you sure you want to exit the Watch Party?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showConfirmExitDialog = false
-                    viewModel.exitRoom(roomId, userData.userId)
-                    onExit()
-                }) {
-                    Text("Yes")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showConfirmExitDialog = false }) {
-                    Text("No")
-                }
-            }
-        )
     }
 }

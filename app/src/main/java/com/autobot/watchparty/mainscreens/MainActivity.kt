@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 },
                                 onUpload = {
-                                    navController.navigate(NavScreenUpload)
+//                                    navController.navigate(NavScreenUpload)
                                 }
                             )
                         }
@@ -159,9 +159,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<NavScreenUpload> {
-                          ScreenUpload(onExit = {
-                            navController.popBackStack()
-                          })
+                          ScreenUpload()
                         }
                     }
                 }

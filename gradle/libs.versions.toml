@@ -29,6 +29,9 @@ firebaseDatabaseKtx = "21.0.0"
 firebaseAuth = "23.0.0"
 lifecycleRuntimeComposeAndroid = "2.8.3"
 workRuntimeKtx = "2.9.0"
+stream = "1.5.8"
+koin = "3.5.3"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -76,6 +79,14 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
+#stram
+
+stream-video = { module = "io.getstream:stream-video-android-core", version.ref = "stream" }
+stream-video-android-ui-compose = { module = "io.getstream:stream-video-android-ui-compose", version.ref = "stream" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -84,3 +95,8 @@ kotlinAndroidKsp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" 
 hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersion" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+
+[bundles]
+koin = ["koin-core", "koin-android", "koin-androidx-compose"]
+stream = ["stream-video", "stream-video-android-ui-compose"]

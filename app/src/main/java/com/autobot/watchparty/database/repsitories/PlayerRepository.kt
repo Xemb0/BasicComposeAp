@@ -36,10 +36,12 @@ class PlayerRepository {
     }
 
     fun updateIsPlaying(roomId: String, isPlaying: Boolean) {
+        println("yaha tak b ara hai")
         firestore.collection("rooms").document(roomId).collection("playback").document("playback")
-            .update("videoPaused", !isPlaying)
+            .set(Playback(0, true, "movie"))
             .addOnSuccessListener {
                 Log.d("Firestore", "IsPlaying updated successfully")
+                println("bhai hua to hi")
             }
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Error updating isPlaying", e)

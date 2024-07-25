@@ -15,7 +15,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.TrackSelectionParameters
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -45,7 +48,6 @@ class PlayerViewModel @Inject constructor(
     private val metaDataReader: MetaDataReader
 ) : ViewModel() {
 
-    private val currentUriState = savedStateHandle.getStateFlow("currentUri", Uri.EMPTY)
     private val _currentPlayback = MutableStateFlow(Playback())
     val currentPlayback: StateFlow<Playback> = _currentPlayback
     private val _currentMovie = MutableStateFlow<Movie?>(null)
@@ -92,7 +94,7 @@ class PlayerViewModel @Inject constructor(
         _currentPlayback.value = playback
         savedStateHandle["playbackState"] = playback
         viewModelScope.launch {
-            playerRepo.updatePlayback("roomId", playback)
+            playerRepo.updatePlayback("123", playback)
         }
     }
 
@@ -100,7 +102,6 @@ class PlayerViewModel @Inject constructor(
         super.onCleared()
         player.release()
     }
-
 
     fun updatePlayback(roomId: String,playback: Playback){
         viewModelScope.launch {
@@ -120,7 +121,7 @@ class PlayerViewModel @Inject constructor(
     fun updateIsPlaying(playing: Boolean) {
         _currentPlayback.value = _currentPlayback.value.copy(videoPaused = !playing)
         viewModelScope.launch {
-            playerRepo.updatePlayback("roomId",_currentPlayback.value)
+            playerRepo.updateIsPlaying("123",playing)
         }
 
     }
@@ -128,7 +129,7 @@ class PlayerViewModel @Inject constructor(
     fun updateTimeStamp(seekForwardIncrementMs: Long) {
         _currentPlayback.value = _currentPlayback.value.copy(timestamp = seekForwardIncrementMs)
         viewModelScope.launch {
-            playerRepo.updateTimestamp("roomId",seekForwardIncrementMs)
+            playerRepo.updateTimestamp("123",seekForwardIncrementMs)
         }
 
     }
@@ -136,7 +137,7 @@ class PlayerViewModel @Inject constructor(
     fun updateMovieName(movieName: String) {
         _currentPlayback.value = _currentPlayback.value.copy(movieName = movieName)
         viewModelScope.launch {
-            playerRepo.updateMovieName("roomId",movieName)
+            playerRepo.updateMovieName("123",movieName)
         }
     }
 

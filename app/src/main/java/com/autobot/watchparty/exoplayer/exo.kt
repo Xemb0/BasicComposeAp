@@ -41,14 +41,21 @@ fun ExoPlayerScreen(playerViewModel: PlayerViewModel = viewModel(), roomId: Stri
 
                 playerViewModel.player.addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        super.onIsPlayingChanged(isPlaying)
-                        playerViewModel.updatePlaybackState()
+                        playerViewModel.updateIsPlaying(isPlaying)
+                        println("ye to chlra hai")
                     }
 
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         if (playbackState == Player.STATE_READY) {
-                            playerViewModel.updatePlaybackState()
                         }
+                    }
+
+                    override fun onSeekForwardIncrementChanged(seekForwardIncrementMs: Long) {
+                        playerViewModel.updateTimeStamp(playerViewModel.player.currentPosition)
+                    }
+
+                    override fun onMaxSeekToPreviousPositionChanged(maxSeekToPreviousPositionMs: Long) {
+                        playerViewModel.updateTimeStamp(playerViewModel.player.currentPosition)
                     }
                 })
 
